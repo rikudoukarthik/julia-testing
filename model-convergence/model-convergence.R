@@ -27,27 +27,6 @@ mod_formula <- formula(
 )
 julia_assign("mod_formula", mod_formula)
 
-# # Define the cloglog link function in Julia
-# julia_command("
-# import MixedModels: Link
-# ")
-
-# julia_command("
-# struct clogloglink <: Link end
-# ")
-
-# julia_command("
-# function MixedModels.linkinv(::clogloglink, η::AbstractVector)
-#     return 1 .- exp.(-exp.(η))
-# end
-# ")
-
-# julia_command("
-# function MixedModels.linkfun(::clogloglink, μ::AbstractVector)
-#     return log.(-log.(1 .- μ))
-# end
-# ")
-
 # fit the model in Julia
 julia_command(" 
 @elapsed mod_julia = fit!(GeneralizedLinearMixedModel(mod_formula, data_mod, Binomial(), CloglogLink()),
