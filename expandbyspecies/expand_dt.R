@@ -50,6 +50,8 @@ expand_dt = function(data_exp, species) {
                                        TRUE ~ as.numeric(OBSERVATION.COUNT))) |> 
     as_tibble()
 
+  detach("package:dtplyr", unload = TRUE)
+  
   return(data_exp2)
 
 }

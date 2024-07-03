@@ -1,19 +1,19 @@
-expand_julia = function(data_exp, species) {
+expand_julia = function(data, species) {
     
     require(tidyverse)
     require(JuliaCall)
     
     
-    data_exp <- data_exp %>% 
+    data <- data %>% 
         mutate(across(contains("gridg"), ~ as.factor(.))) %>% 
         mutate(timegroups = as.factor(timegroups))
     
     
-    checklistinfo = data_exp %>%
+    checklistinfo = data %>%
         distinct(gridg1, gridg2, gridg3, gridg4, 
-            ALL.SPECIES.REPORTED, OBSERVER.ID, 
-            group.id, month, year, no.sp, timegroups, timegroups1) %>%
-            filter(ALL.SPECIES.REPORTED == 1) 
+                 ALL.SPECIES.REPORTED, OBSERVER.ID, 
+                 group.id, month, year, no.sp, timegroups, timegroups1) %>%
+        filter(ALL.SPECIES.REPORTED == 1) 
         
     
     env_julia <- julia_setup()
@@ -28,19 +28,21 @@ expand_julia = function(data_exp, species) {
         checklistinfo = @chain checklistinfo begin
             @subset(:ALL_SPECIES_REPORTED .== 1) # filter rows
             @groupby(:group_id) # group
-            combine(d -> first(d)) # dplyr::summarise
+            combine(first) # dplyr::summarise
         end
     ')
     # Save to R
     julia_command("@rput checklistinfo")
     
+    # converting column names that have changed to _ in Julia back to .
+    names(checklistinfo) <- gsub("_", ".", names(checklistinfo))
     
     # below step (especially left join) cannot be Julia-fied because
-    # that needs data_exp to be transferred, which is essentially
+    # that needs data to be transferred, which is essentially
     # creating a copy, and therefore, not feasible
-    data_exp = checklistinfo %>% 
-        mutate(COMMON.NAME = "Indian Peafowl") %>% 
-        left_join(data_exp,
+    data = checklistinfo %>% 
+        mutate(COMMON.NAME = species) %>% 
+        left_join(data,
                     by = c("group.id", "gridg1", "gridg2", "gridg3", "gridg4",
                     "ALL.SPECIES.REPORTED", "OBSERVER.ID", "month", "year", 
                     "no.sp", "timegroups", "timegroups1", "COMMON.NAME")) %>%
@@ -50,8 +52,14 @@ expand_julia = function(data_exp, species) {
         # deal with NAs (column is character)
         mutate(OBSERVATION.COUNT = case_when(is.na(OBSERVATION.COUNT) ~ 0,
                                                 OBSERVATION.COUNT != "0" ~ 1, 
-                                                TRUE ~ as.numeric(OBSERVATION.COUNT)))
+                                                TRUE ~ as.numeric(OBSERVATION.COUNT))) |> 
+        as_tibble()
+
+    rm(checklistinfo)
             
-    return(data_exp)
+    return(data)
 
 }
+
+# see this for interesting comparison with R
+# https://yjunechoe.github.io/posts/2022-11-13-dataframes-jl-and-accessories/
