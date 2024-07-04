@@ -25,7 +25,3 @@ benchmarked <- bench::mark(
 benchmarked |> 
   dplyr::select(-result, -gc, -memory, -time)  |> 
   write_csv(file = "expandbyspecies/benchmark.csv")
-
-data_orig <- expandbyspecies(data, "Indian Peafowl")
-data_julia <- expand_julia(data, "Indian Peafowl")
-str(data_julia)

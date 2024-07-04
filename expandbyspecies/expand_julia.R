@@ -25,22 +25,22 @@ expand_julia = function(data, species) {
     # data: transfer to Julia (30 sec)
     julia_assign("checklistinfo", checklistinfo)
     julia_command('
-        checklistinfo = @chain checklistinfo begin
+        checklistinfo2 = @chain checklistinfo begin
             @subset(:ALL_SPECIES_REPORTED .== 1) # filter rows
             @groupby(:group_id) # group
             combine(first) # dplyr::summarise
         end
     ')
     # Save to R
-    julia_command("@rput checklistinfo")
+    julia_command("@rput checklistinfo2")
     
     # converting column names that have changed to _ in Julia back to .
-    names(checklistinfo) <- gsub("_", ".", names(checklistinfo))
+    names(checklistinfo2) <- gsub("_", ".", names(checklistinfo2))
     
     # below step (especially left join) cannot be Julia-fied because
     # that needs data to be transferred, which is essentially
     # creating a copy, and therefore, not feasible
-    data = checklistinfo %>% 
+    data = checklistinfo2 %>% 
         mutate(COMMON.NAME = species) %>% 
         left_join(data,
                     by = c("group.id", "gridg1", "gridg2", "gridg3", "gridg4",
@@ -55,7 +55,7 @@ expand_julia = function(data, species) {
                                                 TRUE ~ as.numeric(OBSERVATION.COUNT))) |> 
         as_tibble()
 
-    rm(checklistinfo)
+    rm(checklistinfo2, envir = .GlobalEnv)
             
     return(data)
 
