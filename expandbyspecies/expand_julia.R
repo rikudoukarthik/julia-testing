@@ -56,6 +56,8 @@ expand_julia = function(data, species) {
         as_tibble()
 
     rm(checklistinfo2, envir = .GlobalEnv)
+
+    detach("package:JuliaCall", unload = TRUE)
             
     return(data)
 
