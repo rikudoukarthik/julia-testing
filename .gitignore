@@ -4,3 +4,5 @@
 
 data/dataforanalyses.RData
 model-convergence/results/
+
+*.txt
