@@ -1,5 +1,7 @@
 # Julia testing
 
+There are two main computation bottlenecks in the SoIB pipeline: our GLMM models run for every species across every habitat mask 1000 times; and a data manipulation step where we expand the eBird presence dataset to get absence rows. These are attempts at optimising these steps using alternative approaches.
+
 ## Species trend models (`model-convergence/`)
 
 Figured out the pipelines to successfully run models [from R using JuliaCall](https://github.com/rikudoukarthik/julia-testing/blob/main/model-convergence/model_julia.R) and [from Julia using RCall](https://github.com/rikudoukarthik/julia-testing/blob/main/model-convergence/model_julia.jl), and compared these with models [from R using R (lme4)](https://github.com/rikudoukarthik/julia-testing/blob/main/model-convergence/model_r.R). 
